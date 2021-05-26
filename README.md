@@ -22,3 +22,7 @@ The repository contains a script and contracts that simulate the sequence of cal
 
 1. start forked ETH node: `npx hardhat node`
 2. run script: `npx hardhat run scripts/claim-test.js`
+
+### output
+
+![test output](output.jpg?raw=true "output")

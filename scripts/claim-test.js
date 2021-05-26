@@ -81,7 +81,7 @@ async function main() {
   n = await owner.getTransactionCount()
   console.log(`[!]nonce: ${n}`)
   if (n !== nonceCreateDaoFactory) {
-    throw (new Error("Nonce not reached"))
+    throw new Error("Nonce not reached")
   }
 
   //deploying first factory
@@ -149,10 +149,10 @@ async function main() {
     tx = await c.die()
   }
 
-  console.log('[!]balance before', ethers.utils.formatEther(balanceBefore))
+  console.log('[!]owner balance before', ethers.utils.formatEther(balanceBefore))
+  console.log('[!]claimed balance from contract', ethers.utils.formatEther(balanceOnContract))
   const balanceAfter = await owner.getBalance()
-  console.log('[!]balance on contract', ethers.utils.formatEther(balanceOnContract))
-  console.log('[!]balance after', ethers.utils.formatEther(balanceAfter))
+  console.log('[!]owner balance after', ethers.utils.formatEther(balanceAfter))
   console.log('[!]profit', ethers.utils.formatEther(balanceAfter.sub(balanceBefore).sub(balanceOnContract)))
 
 }
