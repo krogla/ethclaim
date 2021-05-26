@@ -45,7 +45,7 @@ async function main() {
 
   // ***just for testing purposes***
   // impersonating testnet deployer acc
-  await hre.network.provider.request({
+  await network.provider.request({
     method: "hardhat_impersonateAccount",
     params: [ownerAddress]
   })
@@ -137,8 +137,6 @@ async function main() {
   }
 
   const balanceOnContract = await ethers.provider.getBalance(lidoApp)
-  console.log('[!]balance on contract', ethers.utils.formatEther(balanceOnContract))
-
 
   // claim
   let c = await ethers.getContractAt("Claimer", lidoApp, deployer);
@@ -153,6 +151,7 @@ async function main() {
 
   console.log('[!]balance before', ethers.utils.formatEther(balanceBefore))
   const balanceAfter = await owner.getBalance()
+  console.log('[!]balance on contract', ethers.utils.formatEther(balanceOnContract))
   console.log('[!]balance after', ethers.utils.formatEther(balanceAfter))
   console.log('[!]profit', ethers.utils.formatEther(balanceAfter.sub(balanceBefore).sub(balanceOnContract)))
 
