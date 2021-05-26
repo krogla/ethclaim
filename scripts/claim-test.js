@@ -91,7 +91,7 @@ async function main() {
 
   console.log(`[!]new factory: ${f.address}`)
   if (f.address !== daoFactory) {
-    throw (new Error("wrong DAO factory"))
+    throw new Error("wrong DAO factory")
   }
 
   // switch to temp account to avoid change nonce on owner acc
@@ -113,7 +113,7 @@ async function main() {
   console.log('[!]new subfactory', r.events[0].args[0])
 
   if (r.events[0].args[0] !== lidoFactory) {
-    throw (new Error("wrong Lido factory"))
+    throw new Error("wrong Lido factory")
   }
 
   // get subfactory
@@ -133,7 +133,7 @@ async function main() {
   console.log('[!]new claimer', r.events[0].args[0])
 
   if (r.events[0].args[0] !== lidoApp) {
-    throw (new Error("wrong Lido app"))
+    throw new Error("wrong Lido app")
   }
 
   const balanceOnContract = await ethers.provider.getBalance(lidoApp)
