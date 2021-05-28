@@ -8,6 +8,9 @@ const nonceCreateDaoFactory = 5
 const contractNonceCreateDao = 10
 const contractNonceCreateLido = 6
 
+const initialBalance = ethers.utils.parseEther('5')
+const gasPrice = ethers.utils.parseUnits('30', 'gwei')
+
 const deployed = [
   '0x0B6769F500b293e3adacD97c3961189565069902',
   '0xE978D4A752FEB8d27E0412d5A675EA9faE059712',
@@ -58,14 +61,16 @@ async function main() {
   // top up balance
   let tx = await deployer.sendTransaction({
     to: ownerAddress,
-    value: ethers.utils.parseEther('5')
+    value: initialBalance,
+    gasPrice
   })
 
   // ***
   // *** start claiming ***
   // ***
+  const balanceDeployerBefore = await deployer.getBalance()
   const balanceBefore = await owner.getBalance()
-  console.log('[!]balance before', ethers.utils.formatEther(balanceBefore))
+  // console.log('[!]balance before', ethers.utils.formatEther(balanceBefore))
 
 
   //fast forward with empty txs to increase account nonce
@@ -74,7 +79,8 @@ async function main() {
     console.log(`Send tx for nonce ${n}`)
     tx = await owner.sendTransaction({
       to: ownerAddress,
-      value: 0
+      value: 0,
+      gasPrice
     })
     n++
   }
@@ -86,7 +92,7 @@ async function main() {
 
   //deploying first factory
   const Factory = await ethers.getContractFactory("Factory", owner);
-  let f = await Factory.deploy(ownerAddress, deployer.address);
+  let f = await Factory.deploy(ownerAddress, deployer.address, { gasPrice });
   await f.deployed()
 
   console.log(`[!]new factory: ${f.address}`)
@@ -101,14 +107,14 @@ async function main() {
   let r
   // skip to specified nonce 
   while (i < contractNonceCreateDao) {
-    tx = await f.claimer()
+    tx = await f.claimer({ gasPrice })
     r = await tx.wait()
     console.log('new claimer', i, r.events[0].args[0])
     i++
   }
 
   // deploying second factory
-  tx = await f.subfactory()
+  tx = await f.subfactory({ gasPrice })
   r = await tx.wait()
   console.log('[!]new subfactory', r.events[0].args[0])
 
@@ -121,14 +127,14 @@ async function main() {
   i = 0
   // skip to specified nonce 
   while (i < contractNonceCreateLido) {
-    tx = await f.claimer()
+    tx = await f.claimer({ gasPrice })
     r = await tx.wait()
     console.log('new claimer', i, r.events[0].args[0])
     i++
   }
 
   //deploying claimer
-  tx = await f.claimer()
+  tx = await f.claimer({ gasPrice })
   r = await tx.wait()
   console.log('[!]new claimer', r.events[0].args[0])
 
@@ -140,20 +146,30 @@ async function main() {
 
   // claim
   let c = await ethers.getContractAt("Claimer", lidoApp, deployer);
-  tx = await c.claim(ownerAddress)
+  tx = await c.claim(ownerAddress, { gasPrice })
 
   // cleanup (optional)
+  console.log('destroying contracts...')
   for (let addr of deployed) {
-    console.log('destroying', addr)
+    // console.log('destroying', addr)
     c = await ethers.getContractAt("Claimer", addr, deployer);
-    tx = await c.die()
+    tx = await c.die({ gasPrice })
   }
 
+  console.log('[!]deployer balance before', ethers.utils.formatEther(balanceDeployerBefore))
   console.log('[!]owner balance before', ethers.utils.formatEther(balanceBefore))
   console.log('[!]claimed balance from contract', ethers.utils.formatEther(balanceOnContract))
+  const balanceDeployerAfter = await deployer.getBalance()
   const balanceAfter = await owner.getBalance()
+  console.log('[!]deployer balance after', ethers.utils.formatEther(balanceDeployerAfter))
   console.log('[!]owner balance after', ethers.utils.formatEther(balanceAfter))
-  console.log('[!]profit', ethers.utils.formatEther(balanceAfter.sub(balanceBefore).sub(balanceOnContract)))
+  console.log('[!]gasPrice', ethers.utils.formatUnits(gasPrice, "gwei"))
+  console.log('[!]spent by deployer', ethers.utils.formatEther(balanceDeployerBefore.sub(balanceDeployerAfter)))
+  console.log('[!]spent by owner', ethers.utils.formatEther(balanceBefore.sub(balanceAfter).add(balanceOnContract)))
+  console.log('[!]all tx cost', ethers.utils.formatEther(
+    (balanceBefore.sub(balanceAfter).add(balanceOnContract))
+      .add(balanceDeployerBefore.sub(balanceDeployerAfter))
+    ))
 
 }
 

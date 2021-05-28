@@ -4,7 +4,7 @@ We were very lucky that no one transaction was made on the mainnet from the acco
 
 This allows to recreate a sequence of transactions in the mainnet, and as a result, the reproduction of the same contract addresses as in the testnet.
 
-A small research of the process of deploying contracts, showed that it is possible to return Ether from the wrong address, while spending no more than 0.13ETH (with gasPrice = 100gwei)!.
+A small research of the process of deploying contracts, showed that it is possible to return Ether from the wrong address, while spending no more than 0.2ETH (with gasPrice = 30gwei)!
 
 The repository contains a script and contracts that simulate the sequence of calls on the mainnet fork.
 
